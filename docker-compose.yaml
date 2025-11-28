@@ -33,7 +33,7 @@ services:
     image: nextcloud:${NEXTCLOUD_VERSION}
     container_name: nextcloud_cron
     restart: always
-    entrypoint: /cron.sh
+    entrypoint: ["/bin/bash", "/cron.sh"]
     depends_on:
       - nextcloud
     environment:
