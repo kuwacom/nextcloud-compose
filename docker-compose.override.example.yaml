@@ -4,8 +4,24 @@ services:
   nextcloud:
     volumes:
       # 例: ホストにマウントしたリモートファイルシステムをコンテナ内から使えるようにする
-      - /mnt/nas-cephfs:/mnt/nas-cephfs:rshared
+      # :rshared を付けるとホスト側が shared マウントでない場合に起動できないため付けない
+      - /mnt/nas-cephfs:/mnt/nas-cephfs
   nextcloud-cron:
     volumes:
       # cron ジョブからも同じパスを扱えるようにしておく
-      - /mnt/nas-cephfs:/mnt/nas-cephfs:rshared
+      - /mnt/nas-cephfs:/mnt/nas-cephfs
+  db:
+    # PostgreSQL の既定値は小さいメモリ向けなので、ホストのメモリに合わせて上げる (例は RAM 16GB)
+    # shared_buffers は RAM の 15-25% 程度、effective_cache_size は 50% 程度が目安
+    command:
+      - postgres
+      - -c
+      - shared_buffers=2GB
+      - -c
+      - effective_cache_size=8GB
+      - -c
+      - work_mem=16MB
+      - -c
+      - maintenance_work_mem=512MB
+    # Docker 既定の /dev/shm 64MB では並列クエリで不足することがある
+    shm_size: 1g
