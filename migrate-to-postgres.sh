@@ -14,6 +14,9 @@ TS=$(date +%Y%m%d%H%M%S)
 # NC 35.0.2 の db:convert-type は全データコピー後の sequence 再同期で "SELECT MAX() FROM" の構文エラーで失敗する
 # この出力が見えたときはデータはコピー済みなので、補完処理に分岐する
 SEQ_ERROR_MARK='SELECT MAX() FROM'
+# convert-type は OFFSET でページングするため、既定の 1000 行だと数百万行のテーブルで読み飛ばしが膨らみ数日かかる
+# 環境変数 CONVERT_CHUNK_SIZE で変更できる (メモリ不足になる場合は下げる)
+CONVERT_CHUNK_SIZE=${CONVERT_CHUNK_SIZE:-50000}
 
 # 設定読み込み
 if [ ! -f .env ]; then
@@ -134,7 +137,7 @@ docker compose exec -T db psql -v ON_ERROR_STOP=1 -U "$DB_USER" -d postgres -c "
 echo "occ db:convert-type を実行します (データ量によっては 1 時間以上かかります)"
 # パスワードはプロセス一覧や履歴に残らないよう標準入力で渡す
 set +e
-CONV_OUT=$(printf '%s' "$DB_PASSWORD" | docker exec -i -u www-data "$CONTAINER" php occ db:convert-type -n --all-apps --clear-schema --port=5432 pgsql "$DB_USER" db "$DB_NAME" 2>&1)
+CONV_OUT=$(printf '%s' "$DB_PASSWORD" | docker exec -i -u www-data "$CONTAINER" php occ db:convert-type -n --all-apps --clear-schema --chunk-size="$CONVERT_CHUNK_SIZE" --port=5432 pgsql "$DB_USER" db "$DB_NAME" 2>&1)
 CONV_EXIT=$?
 set -e
 # 進行状況のバーを除いて出力する

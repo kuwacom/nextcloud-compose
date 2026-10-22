@@ -270,6 +270,8 @@ sudo bash all-file-scan.sh
 - sequence 再同期の構文エラー (NC 35.0.2): `db:convert-type` は全データコピー後の sequence 再同期で `SELECT MAX() FROM` の構文エラーになることがあります  
   このときデータはコピー済みなので、スクリプトは孤立 sequence の削除と再同期 (`scripts/pg_seq_fix.sql`) と config.php の一括書き換え (`scripts/set_db_config.php`) を自動で行います  
   config.php の書き換えに `occ config:system:set` を 1 項目ずつ使うのは不可です (dbtype を変えた直後から occ が DB に接続できなくなります)
+- 大きいテーブルで極端に遅い: `db:convert-type` は OFFSET でページングするため、既定の 1000 行ずつだと数百万行の `oc_filecache` で数日かかります  
+  スクリプトは `--chunk-size 50000` で実行します (`CONVERT_CHUNK_SIZE` で変更可)。MariaDB の `innodb_buffer_pool_size` を移行中だけ DB サイズ以上にすると、さらに速くなります
 - 切り戻し: 移行中は MariaDB 側に書き込みがないため、失敗したら config.php のバックアップを戻し、所有者を www-data に直して (`docker exec nextcloud_app chown www-data:www-data /var/www/html/config/config.php`) `docker compose restart nextcloud` すれば MariaDB で再開できます
 
 </details>
