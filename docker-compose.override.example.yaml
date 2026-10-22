@@ -1,0 +1,11 @@
+# ホスト固有の設定 (リモートマウントの追加など) を記述するための例
+# 実際に使うときは docker-compose.override.yaml という名前にコピーする (gitignore 済み)
+services:
+  nextcloud:
+    volumes:
+      # 例: ホストにマウントしたリモートファイルシステムをコンテナ内から使えるようにする
+      - /mnt/nas-cephfs:/mnt/nas-cephfs:rshared
+  nextcloud-cron:
+    volumes:
+      # cron ジョブからも同じパスを扱えるようにしておく
+      - /mnt/nas-cephfs:/mnt/nas-cephfs:rshared

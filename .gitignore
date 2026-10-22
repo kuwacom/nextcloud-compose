@@ -4,9 +4,16 @@
 # Data Base
 redis
 mariadb
+postgres
 
 # Nextcloud
 nextcloud
 
 # certificates
 certs
+
+# compose override (ホスト固有設定)
+docker-compose.override.yaml
+
+# DB移行時のバックアップ
+backup
